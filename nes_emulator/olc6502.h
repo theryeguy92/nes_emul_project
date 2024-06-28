@@ -2,7 +2,7 @@
 
 class Bus;
 
-class olc5602
+class olc6502
 {
 public:
 	olc6502();
@@ -61,6 +61,23 @@ public:
 	uint8_t STX();	uint8_t STY();	uint8_t TAX();	uint8_t TAY();
 	uint8_t TSX();	uint8_t TXA();	uint8_t TXS();	uint8_t TYA();
 
+	//Catch illegal functions
+	uint8_t XXX();
+
+	//Clock cycles
+	void clock();
+	void reset();
+	void irq();
+	void nmi();
+
+	uint8_t fetch();
+	uint8_t  fetched = 0x00;
+
+	uint16_t addr_abs = 0x0000;
+	uint16_t addr_rel = 0x00;
+	uint8_t opcode = 0x00;
+	uint8_ cycles = 0;
+
 private:
 	Bus *bus = nullptr;
 	uint8_t read(uint16_t a);
@@ -69,5 +86,15 @@ private:
 	// Functions to access status register
 	uint8_t GetFlag(FLAGS6502 f);
 	void	SetFlag(FLAGS6502 f, bool v);
+
+	struct INSTRUCTION
+	{
+		std::string name;
+		uint8_t(olc6502::* operate)(void) = nullptr;
+		uint8_t(olc6502::* addrmode)(void) = nullptr;
+		uint8_t		cycles = 0;
+	};
+
+	std::vector<INSTRUCTION> lookup;
 };
 
