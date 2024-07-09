@@ -154,7 +154,7 @@
     <ClCompile Include="Mapper_000.cpp" />
     <ClCompile Include="olc2C02.cpp" />
     <ClCompile Include="olc6502.cpp" />
-    <ClCompile Include="olcNes_2C02.cpp" />
+    <ClCompile Include="olcNes_PPU_Backgrounds.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

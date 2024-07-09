@@ -6,6 +6,9 @@
 
 
 #include "Mapper_000.h"
+//#include "Mapper_002.h"
+//#include "Mapper_003.h"
+//#include "Mapper_066.h"
 
 class Cartridge
 {
@@ -45,4 +48,7 @@ public:
 	// Communication with PPU Bus
 	bool ppuRead(uint16_t addr, uint8_t& data);
 	bool ppuWrite(uint16_t addr, uint8_t data);
+
+	// Permits system rest of mapper to know state
+	void reset();
 };
