@@ -4,7 +4,7 @@
 
 Cartridge::Cartridge(const std::string& sFileName)
 {
-	// iNES Format Header
+	// iNES Format Header 
 	struct sHeader
 	{
 		char name[4];
