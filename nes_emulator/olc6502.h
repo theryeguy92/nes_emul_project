@@ -152,27 +152,7 @@ private:
 	uint8_t IZX();	uint8_t IZY();
 
 private:
-	// Opcodes ======================================================
-	// There are 56 "legitimate" opcodes provided by the 6502 CPU. I
-	// have not modelled "unofficial" opcodes. As each opcode is 
-	// defined by 1 byte, there are potentially 256 possible codes.
-	// Codes are not used in a "switch case" style on a processor,
-	// instead they are repsonisble for switching individual parts of
-	// CPU circuits on and off. The opcodes listed here are official, 
-	// meaning that the functionality of the chip when provided with
-	// these codes is as the developers intended it to be. Unofficial
-	// codes will of course also influence the CPU circuitry in 
-	// interesting ways, and can be exploited to gain additional
-	// functionality!
-	//
-	// These functions return 0 normally, but some are capable of
-	// requiring more clock cycles when executed under certain
-	// conditions combined with certain addressing modes. If that is 
-	// the case, they return 1.
-	//
-	// I have included detailed explanations of each function in 
-	// the class implementation file. Note they are listed in
-	// alphabetical order here for ease of finding.
+
 
 	uint8_t ADC();	uint8_t AND();	uint8_t ASL();	uint8_t BCC();
 	uint8_t BCS();	uint8_t BEQ();	uint8_t BIT();	uint8_t BMI();
@@ -189,8 +169,7 @@ private:
 	uint8_t STX();	uint8_t STY();	uint8_t TAX();	uint8_t TAY();
 	uint8_t TSX();	uint8_t TXA();	uint8_t TXS();	uint8_t TYA();
 
-	// I capture all "unofficial" opcodes with this function. It is
-	// functionally identical to a NOP
+
 	uint8_t XXX();
 
 #ifdef LOGMODE
@@ -198,3 +177,4 @@ private:
 	FILE* logfile = nullptr;
 #endif
 };
+

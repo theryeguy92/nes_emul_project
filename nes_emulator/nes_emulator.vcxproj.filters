@@ -44,9 +44,6 @@
     <ClCompile Include="olc6502.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="olcNes_2C02.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="olc2C02.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mapper_000.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="olcNes_PPU_Backgrounds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

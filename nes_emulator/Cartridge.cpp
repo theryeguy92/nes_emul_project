@@ -1,10 +1,8 @@
 #include "Cartridge.h"
 
-
-
 Cartridge::Cartridge(const std::string& sFileName)
 {
-	// iNES Format Header 
+	// iNES Format Header
 	struct sHeader
 	{
 		char name[4];
@@ -51,7 +49,16 @@ Cartridge::Cartridge(const std::string& sFileName)
 			ifs.read((char*)vPRGMemory.data(), vPRGMemory.size());
 
 			nCHRBanks = header.chr_rom_chunks;
-			vCHRMemory.resize(nCHRBanks * 8192);
+			if (nCHRBanks == 0)
+			{
+				// Create CHR RAM
+				vCHRMemory.resize(8192);
+			}
+			else
+			{
+				// Allocate for ROM
+				vCHRMemory.resize(nCHRBanks * 8192);
+			}
 			ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
 		}
 
@@ -63,7 +70,10 @@ Cartridge::Cartridge(const std::string& sFileName)
 		// Load appropriate mapper
 		switch (nMapperID)
 		{
-		case 0: pMapper = std::make_shared<Mapper_000>(nPRGBanks, nCHRBanks); break;
+		case   0: pMapper = std::make_shared<Mapper_000>(nPRGBanks, nCHRBanks); break;
+			//case   2: pMapper = std::make_shared<Mapper_002>(nPRGBanks, nCHRBanks); break;
+			//case   3: pMapper = std::make_shared<Mapper_003>(nPRGBanks, nCHRBanks); break;
+			//case  66: pMapper = std::make_shared<Mapper_066>(nPRGBanks, nCHRBanks); break;
 		}
 
 		bImageValid = true;
@@ -97,7 +107,7 @@ bool Cartridge::cpuRead(uint16_t addr, uint8_t& data)
 bool Cartridge::cpuWrite(uint16_t addr, uint8_t data)
 {
 	uint32_t mapped_addr = 0;
-	if (pMapper->cpuMapWrite(addr, mapped_addr))
+	if (pMapper->cpuMapWrite(addr, mapped_addr, data))
 	{
 		vPRGMemory[mapped_addr] = data;
 		return true;
@@ -121,11 +131,20 @@ bool Cartridge::ppuRead(uint16_t addr, uint8_t& data)
 bool Cartridge::ppuWrite(uint16_t addr, uint8_t data)
 {
 	uint32_t mapped_addr = 0;
-	if (pMapper->ppuMapRead(addr, mapped_addr))
+	if (pMapper->ppuMapWrite(addr, mapped_addr))
 	{
 		vCHRMemory[mapped_addr] = data;
 		return true;
 	}
 	else
 		return false;
+}
+
+
+void Cartridge::reset()
+{
+	// Note: This does not reset the ROM contents,
+	// but does reset the mapper.
+	if (pMapper != nullptr)
+		pMapper->reset();
 }
