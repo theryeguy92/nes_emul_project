@@ -36,6 +36,9 @@
     <ClInclude Include="Mapper_000.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mapper_067.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bus.cpp">
@@ -57,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="olcNes_PPU_Backgrounds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_067.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

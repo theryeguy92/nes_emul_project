@@ -143,6 +143,7 @@
     <ClInclude Include="Cartridge.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="Mapper_000.h" />
+    <ClInclude Include="Mapper_067.h" />
     <ClInclude Include="olc2C02.h" />
     <ClInclude Include="olc6502.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="Cartridge.cpp" />
     <ClCompile Include="Mapper.cpp" />
     <ClCompile Include="Mapper_000.cpp" />
+    <ClCompile Include="Mapper_067.cpp" />
     <ClCompile Include="olc2C02.cpp" />
     <ClCompile Include="olc6502.cpp" />
     <ClCompile Include="olcNes_PPU_Backgrounds.cpp" />
