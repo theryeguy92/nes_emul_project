@@ -1,5 +1,6 @@
 #pragma once
 #pragma endregion
+#pragma region license_and_help
 
 #ifndef OLC_PGE_DEF
 #define OLC_PGE_DEF

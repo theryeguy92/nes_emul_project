@@ -30,6 +30,12 @@
     <ClInclude Include="Cartridge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper_000.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bus.cpp">
@@ -38,13 +44,19 @@
     <ClCompile Include="olc6502.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="olcNes_Video1_6502.cpp">
+    <ClCompile Include="olcNes_2C02.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="olc2C02.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Cartridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_000.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
