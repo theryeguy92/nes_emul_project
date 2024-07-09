@@ -198,5 +198,3 @@ private:
 	FILE* logfile = nullptr;
 #endif
 };
-
-// End of File - Jx9
