@@ -9,7 +9,12 @@ Mapper_000::~Mapper_000()
 {
 }
 
-bool Mapper_000::cpuMapRead(uint16_t addr, uint32_t& mapped_addr)
+void Mapper_000::reset()
+{
+
+}
+
+bool Mapper_000::cpuMapRead(uint16_t addr, uint32_t& mapped_addr, uint8_t& data)
 {
 	// if PRGROM is 16KB
 	//     CPU Address Bus          PRG ROM
@@ -27,7 +32,7 @@ bool Mapper_000::cpuMapRead(uint16_t addr, uint32_t& mapped_addr)
 	return false;
 }
 
-bool Mapper_000::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr)
+bool Mapper_000::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data)
 {
 	if (addr >= 0x8000 && addr <= 0xFFFF)
 	{

@@ -1865,7 +1865,7 @@ namespace olc
 		auto read = [&decoded, &pos](char* dst, size_t size) {
 			memcpy((void*)dst, (const void*)(decoded.data() + pos), size);
 			pos += size;
-		};
+			};
 
 		auto get = [&read]() -> int { char c; read(&c, 1); return c; };
 
@@ -1940,7 +1940,7 @@ namespace olc
 			size_t sizeNow = stream.size();
 			stream.resize(sizeNow + size);
 			memcpy(stream.data() + sizeNow, data, size);
-		};
+			};
 
 		// Iterate through map
 		write((char*)&nMapSize, sizeof(uint32_t));
@@ -2428,10 +2428,10 @@ namespace olc
 			int d = 3 - 2 * radius;
 
 			auto drawline = [&](int sx, int ex, int y)
-			{
-				for (int x = sx; x <= ex; x++)
-					Draw(x, y, p);
-			};
+				{
+					for (int x = sx; x <= ex; x++)
+						Draw(x, y, p);
+				};
 
 			while (y0 >= x0)
 			{
@@ -2490,12 +2490,12 @@ namespace olc
 		// https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
 		static constexpr int SEG_I = 0b0000, SEG_L = 0b0001, SEG_R = 0b0010, SEG_B = 0b0100, SEG_T = 0b1000;
 		auto Segment = [&vScreenSize = vScreenSize](const olc::vi2d& v)
-		{
-			int i = SEG_I;
-			if (v.x < 0) i |= SEG_L; else if (v.x > vScreenSize.x) i |= SEG_R;
-			if (v.y < 0) i |= SEG_B; else if (v.y > vScreenSize.y) i |= SEG_T;
-			return i;
-		};
+			{
+				int i = SEG_I;
+				if (v.x < 0) i |= SEG_L; else if (v.x > vScreenSize.x) i |= SEG_R;
+				if (v.y < 0) i |= SEG_B; else if (v.y > vScreenSize.y) i |= SEG_T;
+				return i;
+			};
 
 		int s1 = Segment(in_p1), s2 = Segment(in_p2);
 
@@ -2635,7 +2635,7 @@ namespace olc
 			if (maxx < t1x) maxx = t1x;
 			if (maxx < t2x) maxx = t2x;
 			drawline(minx, maxx, y);    // Draw line from min to max points found on the y
-										// Now increase y
+			// Now increase y
 			if (!changed1) t1x += signx1;
 			t1x += t1xp;
 			if (!changed2) t2x += signx2;
@@ -3667,26 +3667,26 @@ namespace olc
 		}
 
 		auto TypeCharacter = [&](const char c)
-		{
-			if (c >= 32 && c < 127)
 			{
-				sConsoleLines[vConsoleCursor.y].append(1, c);
-				vConsoleCursor.x++;
-			}
+				if (c >= 32 && c < 127)
+				{
+					sConsoleLines[vConsoleCursor.y].append(1, c);
+					vConsoleCursor.x++;
+				}
 
-			if (c == '\n' || vConsoleCursor.x >= vConsoleSize.x)
-			{
-				vConsoleCursor.y++; vConsoleCursor.x = 0;
-			}
+				if (c == '\n' || vConsoleCursor.x >= vConsoleSize.x)
+				{
+					vConsoleCursor.y++; vConsoleCursor.x = 0;
+				}
 
-			if (vConsoleCursor.y >= vConsoleSize.y)
-			{
-				vConsoleCursor.y = vConsoleSize.y - 1;
-				for (size_t i = 1; i < vConsoleSize.y; i++)
-					sConsoleLines[i - 1] = sConsoleLines[i];
-				sConsoleLines[vConsoleCursor.y].clear();
-			}
-		};
+				if (vConsoleCursor.y >= vConsoleSize.y)
+				{
+					vConsoleCursor.y = vConsoleSize.y - 1;
+					for (size_t i = 1; i < vConsoleSize.y; i++)
+						sConsoleLines[i - 1] = sConsoleLines[i];
+					sConsoleLines[vConsoleCursor.y].clear();
+				}
+			};
 
 		// Empty out "std::cout", parsing as we go
 		while (ssConsoleOutput.rdbuf()->sgetc() != -1)
@@ -4020,27 +4020,27 @@ namespace olc
 
 		// Compare hardware input states from previous frame
 		auto ScanHardware = [&](HWButton* pKeys, bool* pStateOld, bool* pStateNew, uint32_t nKeyCount)
-		{
-			for (uint32_t i = 0; i < nKeyCount; i++)
 			{
-				pKeys[i].bPressed = false;
-				pKeys[i].bReleased = false;
-				if (pStateNew[i] != pStateOld[i])
+				for (uint32_t i = 0; i < nKeyCount; i++)
 				{
-					if (pStateNew[i])
+					pKeys[i].bPressed = false;
+					pKeys[i].bReleased = false;
+					if (pStateNew[i] != pStateOld[i])
 					{
-						pKeys[i].bPressed = !pKeys[i].bHeld;
-						pKeys[i].bHeld = true;
+						if (pStateNew[i])
+						{
+							pKeys[i].bPressed = !pKeys[i].bHeld;
+							pKeys[i].bHeld = true;
+						}
+						else
+						{
+							pKeys[i].bReleased = true;
+							pKeys[i].bHeld = false;
+						}
 					}
-					else
-					{
-						pKeys[i].bReleased = true;
-						pKeys[i].bHeld = false;
-					}
+					pStateOld[i] = pStateNew[i];
 				}
-				pStateOld[i] = pStateNew[i];
-			}
-		};
+			};
 
 		ScanHardware(pKeyboardState, pKeyOldState, pKeyNewState, 256);
 		ScanHardware(pMouseState, pMouseOldState, pMouseNewState, nMouseButtons);
@@ -5441,48 +5441,48 @@ namespace olc
 			png_infop info;
 
 			auto loadPNG = [&]()
-			{
-				png_read_info(png, info);
-				png_byte color_type;
-				png_byte bit_depth;
-				png_bytep* row_pointers;
-				spr->width = png_get_image_width(png, info);
-				spr->height = png_get_image_height(png, info);
-				color_type = png_get_color_type(png, info);
-				bit_depth = png_get_bit_depth(png, info);
-				if (bit_depth == 16) png_set_strip_16(png);
-				if (color_type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png);
-				if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)	png_set_expand_gray_1_2_4_to_8(png);
-				if (png_get_valid(png, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png);
-				if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_PALETTE)
-					png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
-				if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-					png_set_gray_to_rgb(png);
-				png_read_update_info(png, info);
-				row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * spr->height);
-				for (int y = 0; y < spr->height; y++) {
-					row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png, info));
-				}
-				png_read_image(png, row_pointers);
-				////////////////////////////////////////////////////////////////////////////
-				// Create sprite array
-				spr->pColData.resize(spr->width * spr->height);
-				// Iterate through image rows, converting into sprite format
-				for (int y = 0; y < spr->height; y++)
 				{
-					png_bytep row = row_pointers[y];
-					for (int x = 0; x < spr->width; x++)
-					{
-						png_bytep px = &(row[x * 4]);
-						spr->SetPixel(x, y, Pixel(px[0], px[1], px[2], px[3]));
+					png_read_info(png, info);
+					png_byte color_type;
+					png_byte bit_depth;
+					png_bytep* row_pointers;
+					spr->width = png_get_image_width(png, info);
+					spr->height = png_get_image_height(png, info);
+					color_type = png_get_color_type(png, info);
+					bit_depth = png_get_bit_depth(png, info);
+					if (bit_depth == 16) png_set_strip_16(png);
+					if (color_type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png);
+					if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)	png_set_expand_gray_1_2_4_to_8(png);
+					if (png_get_valid(png, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png);
+					if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_PALETTE)
+						png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
+					if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+						png_set_gray_to_rgb(png);
+					png_read_update_info(png, info);
+					row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * spr->height);
+					for (int y = 0; y < spr->height; y++) {
+						row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png, info));
 					}
-				}
+					png_read_image(png, row_pointers);
+					////////////////////////////////////////////////////////////////////////////
+					// Create sprite array
+					spr->pColData.resize(spr->width * spr->height);
+					// Iterate through image rows, converting into sprite format
+					for (int y = 0; y < spr->height; y++)
+					{
+						png_bytep row = row_pointers[y];
+						for (int x = 0; x < spr->width; x++)
+						{
+							png_bytep px = &(row[x * 4]);
+							spr->SetPixel(x, y, Pixel(px[0], px[1], px[2], px[3]));
+						}
+					}
 
-				for (int y = 0; y < spr->height; y++) // Thanks maksym33
-					free(row_pointers[y]);
-				free(row_pointers);
-				png_destroy_read_struct(&png, &info, nullptr);
-			};
+					for (int y = 0; y < spr->height; y++) // Thanks maksym33
+						free(row_pointers[y]);
+					free(row_pointers);
+					png_destroy_read_struct(&png, &info, nullptr);
+				};
 
 			png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 			if (!png) goto fail_load;
@@ -6278,7 +6278,7 @@ namespace olc {
 
 			auto mouseMoveCall = [](int x, int y) -> void {
 				ptrPGE->olc_UpdateMouse(x, y);
-			};
+				};
 
 			glutMotionFunc(mouseMoveCall);
 			glutPassiveMotionFunc(mouseMoveCall);
@@ -6590,7 +6590,7 @@ namespace olc
 
 					}, vWindowSize.x, vWindowSize.y); // Fullscreen and Resize Observers
 #pragma warning restore format
-				return olc::rcode::OK;
+			return olc::rcode::OK;
 		}
 
 		// Interface PGE's UpdateWindowSize, for use in Javascript

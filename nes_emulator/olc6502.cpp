@@ -1403,12 +1403,12 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 	// hex strings because "modern C++"'s method with 
 	// streams is atrocious
 	auto hex = [](uint32_t n, uint8_t d)
-	{
-		std::string s(d, '0');
-		for (int i = d - 1; i >= 0; i--, n >>= 4)
-			s[i] = "0123456789ABCDEF"[n & 0xF];
-		return s;
-	};
+		{
+			std::string s(d, '0');
+			for (int i = d - 1; i >= 0; i--, n >>= 4)
+				s[i] = "0123456789ABCDEF"[n & 0xF];
+			return s;
+		};
 
 	// Starting at the specified address we read an instruction
 	// byte, which in turn yields information from the lookup table
@@ -1513,4 +1513,4 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 	return mapLines;
 }
 
-// End of File - Jx9
+// E

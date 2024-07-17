@@ -36,6 +36,27 @@
     <ClInclude Include="Mapper_000.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mapper_001.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper_002.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper_066.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="olc2A03.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="olcPGEX_Sound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper_003.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper_004.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bus.cpp">
@@ -57,6 +78,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mapper_000.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_001.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_002.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_066.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="olc2A03.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="olcNes_Sounds1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_003.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_004.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
