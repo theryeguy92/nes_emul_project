@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -143,8 +143,15 @@
     <ClInclude Include="Cartridge.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="Mapper_000.h" />
+    <ClInclude Include="Mapper_001.h" />
+    <ClInclude Include="Mapper_002.h" />
+    <ClInclude Include="Mapper_003.h" />
+    <ClInclude Include="Mapper_004.h" />
+    <ClInclude Include="Mapper_066.h" />
+    <ClInclude Include="olc2A03.h" />
     <ClInclude Include="olc2C02.h" />
     <ClInclude Include="olc6502.h" />
+    <ClInclude Include="olcPGEX_Sound.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
   </ItemGroup>
   <ItemGroup>
@@ -152,9 +159,16 @@
     <ClCompile Include="Cartridge.cpp" />
     <ClCompile Include="Mapper.cpp" />
     <ClCompile Include="Mapper_000.cpp" />
+    <ClCompile Include="Mapper_001.cpp" />
+    <ClCompile Include="Mapper_002.cpp" />
+    <ClCompile Include="Mapper_003.cpp" />
+    <ClCompile Include="Mapper_004.cpp" />
+    <ClCompile Include="Mapper_066.cpp" />
+    <ClCompile Include="olc2A03.cpp" />
     <ClCompile Include="olc2C02.cpp" />
     <ClCompile Include="olc6502.cpp" />
     <ClCompile Include="olcNes_2C02.cpp" />
+    <ClCompile Include="olcNes_Sounds1.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
