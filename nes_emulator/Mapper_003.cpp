@@ -8,29 +8,31 @@ Mapper_003::~Mapper_003()
 {
 }
 
-bool Mapper_003::cpuMapRead(uint16_t addr, uint32_t& mapped_addr)
+bool Mapper_003::cpuMapRead(uint16_t addr, uint32_t& mapped_addr, uint8_t& data)
 {
     if (addr >= 0x8000 && addr <= 0xFFFF)
     {
-        if (nPRGBanks == 1) // 16K ROM 
+        if (nPRGBanks == 1)
+        {
             mapped_addr = addr & 0x3FFF;
-        if (nPRGBanks == 2) // 32K ROM
+        }
+        else if (nPRGBanks == 2)
+        {
             mapped_addr = addr & 0x7FFF;
+        }
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
-bool Mapper_003::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data) // Added data parameter
+bool Mapper_003::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data)
 {
     if (addr >= 0x8000 && addr <= 0xFFFF)
     {
         nCHRBankSelect = data & 0x03;
-        mapped_addr = addr;
     }
 
-    // Mapper has handled write, but do not update ROMs
     return false;
 }
 
@@ -41,8 +43,8 @@ bool Mapper_003::ppuMapRead(uint16_t addr, uint32_t& mapped_addr)
         mapped_addr = nCHRBankSelect * 0x2000 + addr;
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 bool Mapper_003::ppuMapWrite(uint16_t addr, uint32_t& mapped_addr)

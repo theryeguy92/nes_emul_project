@@ -5,6 +5,17 @@
 #include <vector>
 #include <memory> // Add this include for std::shared_ptr
 
+
+//enum class MIRROR
+//{
+//    HORIZONTAL,
+//    VERTICAL,
+//    ONE_SCREEN_LO,
+//    ONE_SCREEN_HI,
+//    HARDWARE
+//};
+
+//#include "Mapper.h"
 #include "Mapper_000.h"
 #include "Mapper_001.h"
 #include "Mapper_002.h"
@@ -12,14 +23,6 @@
 #include "Mapper_004.h"
 #include "Mapper_066.h"
 
-enum class MIRROR
-{
-    HORIZONTAL,
-    VERTICAL,
-    ONE_SCREEN_LO,
-    ONE_SCREEN_HI,
-    HARDWARE
-};
 
 class Cartridge
 {

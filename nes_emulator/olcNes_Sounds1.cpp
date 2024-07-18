@@ -60,14 +60,14 @@ private:
 	{
 		std::string status = "STATUS: ";
 		DrawString(x, y, "STATUS:", olc::WHITE);
-		DrawString(x + 64, y, "N", nes.cpu.status & olc6502::N ? olc::GREEN : olc::RED);
-		DrawString(x + 80, y, "V", nes.cpu.status & olc6502::V ? olc::GREEN : olc::RED);
-		DrawString(x + 96, y, "-", nes.cpu.status & olc6502::U ? olc::GREEN : olc::RED);
-		DrawString(x + 112, y, "B", nes.cpu.status & olc6502::B ? olc::GREEN : olc::RED);
-		DrawString(x + 128, y, "D", nes.cpu.status & olc6502::D ? olc::GREEN : olc::RED);
-		DrawString(x + 144, y, "I", nes.cpu.status & olc6502::I ? olc::GREEN : olc::RED);
-		DrawString(x + 160, y, "Z", nes.cpu.status & olc6502::Z ? olc::GREEN : olc::RED);
-		DrawString(x + 178, y, "C", nes.cpu.status & olc6502::C ? olc::GREEN : olc::RED);
+		DrawString(x + 64, y, "N", (nes.cpu.status & olc6502::N) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 80, y, "V", (nes.cpu.status & olc6502::V) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 96, y, "-", (nes.cpu.status & olc6502::U) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 112, y, "B", (nes.cpu.status & olc6502::B) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 128, y, "D", (nes.cpu.status & olc6502::D) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 144, y, "I", (nes.cpu.status & olc6502::I) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 160, y, "Z", (nes.cpu.status & olc6502::Z) != 0 ? olc::GREEN : olc::RED);
+		DrawString(x + 178, y, "C", (nes.cpu.status & olc6502::C) != 0 ? olc::GREEN : olc::RED);
 		DrawString(x, y + 10, "PC: $" + hex(nes.cpu.pc, 4));
 		DrawString(x, y + 20, "A: $" + hex(nes.cpu.a, 2) + "  [" + std::to_string(nes.cpu.a) + "]");
 		DrawString(x, y + 30, "X: $" + hex(nes.cpu.x, 2) + "  [" + std::to_string(nes.cpu.x) + "]");
@@ -133,12 +133,13 @@ private:
 	{
 		if (nChannel == 0)
 		{
-			while (!pInstance->nes.clock()) {};
+			pInstance->nes.clock();
 			return static_cast<float>(pInstance->nes.dAudioSample);
 		}
 		else
 			return 0.0f;
 	}
+
 
 	bool OnUserCreate() override
 	{
@@ -153,8 +154,6 @@ private:
 
 		// Extract dissassembly
 		//mapAsm = nes.cpu.disassemble(0x0000, 0xFFFF);
-
-
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -206,7 +205,6 @@ private:
 			audio[2].pop_front();
 			audio[2].push_back(nes.apu.noise_visual);
 		}
-
 
 		Clear(olc::DARK_BLUE);
 

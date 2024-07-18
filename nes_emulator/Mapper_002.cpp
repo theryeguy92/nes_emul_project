@@ -8,7 +8,7 @@ Mapper_002::~Mapper_002()
 {
 }
 
-bool Mapper_002::cpuMapRead(uint16_t addr, uint32_t& mapped_addr)
+bool Mapper_002::cpuMapRead(uint16_t addr, uint32_t& mapped_addr, uint8_t& data)
 {
     if (addr >= 0x8000 && addr <= 0xBFFF)
     {
@@ -32,7 +32,6 @@ bool Mapper_002::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data)
         nPRGBankSelectLo = data & 0x0F;
     }
 
-    // Mapper has handled write, but do not update ROMs
     return false;
 }
 
@@ -43,6 +42,7 @@ bool Mapper_002::ppuMapRead(uint16_t addr, uint32_t& mapped_addr)
         mapped_addr = addr;
         return true;
     }
+
     return false;
 }
 
@@ -50,12 +50,13 @@ bool Mapper_002::ppuMapWrite(uint16_t addr, uint32_t& mapped_addr)
 {
     if (addr < 0x2000)
     {
-        if (nCHRBanks == 0) // Treating as RAM
+        if (nCHRBanks == 0)
         {
             mapped_addr = addr;
             return true;
         }
     }
+
     return false;
 }
 
