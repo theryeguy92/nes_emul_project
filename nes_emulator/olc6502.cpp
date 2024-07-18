@@ -6,6 +6,7 @@ olc6502::olc6502()
 {
 	// Assembles the translation table to emulate the 6502... Thank god for github/youtube
 	using a = olc6502;
+	//Strategy Pattern: Using pointers to handle different opcodes
 	lookup =
 	{
 		{ "BRK", &a::BRK, &a::IMM, 7 },{ "ORA", &a::ORA, &a::IZX, 6 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 8 },{ "???", &a::NOP, &a::IMP, 3 },{ "ORA", &a::ORA, &a::ZP0, 3 },{ "ASL", &a::ASL, &a::ZP0, 5 },{ "???", &a::XXX, &a::IMP, 5 },{ "PHP", &a::PHP, &a::IMP, 3 },{ "ORA", &a::ORA, &a::IMM, 2 },{ "ASL", &a::ASL, &a::IMP, 2 },{ "???", &a::XXX, &a::IMP, 2 },{ "???", &a::NOP, &a::IMP, 4 },{ "ORA", &a::ORA, &a::ABS, 4 },{ "ASL", &a::ASL, &a::ABS, 6 },{ "???", &a::XXX, &a::IMP, 6 },
@@ -42,7 +43,7 @@ olc6502::~olc6502()
 // Reads an 8-bit byte from the bus, located at the specified 16-bit address
 uint8_t olc6502::read(uint16_t a)
 {
-
+	//Facade Pattern: Simplifying interaction with bus
 	return bus->cpuRead(a, false);
 }
 
@@ -62,7 +63,7 @@ void olc6502::write(uint16_t a, uint8_t d)
 
 void olc6502::reset()
 {
-	// Get address to set program counter to
+	// State Pattern: Reseting the CPU to a known state
 	addr_abs = 0xFFFC;
 	uint16_t lo = read(addr_abs + 0);
 	uint16_t hi = read(addr_abs + 1);
@@ -93,8 +94,7 @@ void olc6502::irq()
 	// If interrupts are allowed
 	if (GetFlag(I) == 0)
 	{
-		// Push the program counter to the stack. It's 16-bits dont
-		// forget so that takes two pushes
+		// Command Pattern: Here we are encapsulating each instruction as a command
 		write(0x0100 + stkp, (pc >> 8) & 0x00FF);
 		stkp--;
 		write(0x0100 + stkp, pc & 0x00FF);
@@ -153,7 +153,7 @@ void olc6502::clock()
 		uint16_t log_pc = pc;
 #endif
 
-		// Always set the unused status flag bit to 1
+		// Template Pattern: Making the skeleton of the clock
 		SetFlag(U, true);
 
 		// Increment program counter, we read the opcode byte
