@@ -96,41 +96,7 @@ olc::Sprite& olc2C02::GetScreen()
 
 olc::Sprite& olc2C02::GetPatternTable(uint8_t i, uint8_t palette)
 {
-	// This function draw the CHR ROM for a given pattern table into
-	// an olc::Sprite, using a specified palette. Pattern tables consist
-	// of 16x16 "tiles or characters". It is independent of the running
-	// emulation and using it does not change the systems state, though
-	// it gets all the data it needs from the live system. Consequently,
-	// if the game has not yet established palettes or mapped to relevant
-	// CHR ROM banks, the sprite may look empty. This approach permits a 
-	// "live" extraction of the pattern table exactly how the NES, and 
-	// ultimately the player would see it.
-
-	// A tile consists of 8x8 pixels. On the NES, pixels are 2 bits, which
-	// gives an index into 4 different colours of a specific palette. There
-	// are 8 palettes to choose from. Colour "0" in each palette is effectively
-	// considered transparent, as those locations in memory "mirror" the global
-	// background colour being used. This mechanics of this are shown in 
-	// detail in ppuRead() & ppuWrite()
-
-	// Characters on NES
-	// ~~~~~~~~~~~~~~~~~
-	// The NES stores characters using 2-bit pixels. These are not stored sequentially
-	// but in singular bit planes. For example:
-	//
-	// 2-Bit Pixels       LSB Bit Plane     MSB Bit Plane
-	// 0 0 0 0 0 0 0 0	  0 0 0 0 0 0 0 0   0 0 0 0 0 0 0 0
-	// 0 1 1 0 0 1 1 0	  0 1 1 0 0 1 1 0   0 0 0 0 0 0 0 0
-	// 0 1 2 0 0 2 1 0	  0 1 1 0 0 1 1 0   0 0 1 0 0 1 0 0
-	// 0 0 0 0 0 0 0 0 =  0 0 0 0 0 0 0 0 + 0 0 0 0 0 0 0 0
-	// 0 1 1 0 0 1 1 0	  0 1 1 0 0 1 1 0   0 0 0 0 0 0 0 0
-	// 0 0 1 1 1 1 0 0	  0 0 1 1 1 1 0 0   0 0 0 0 0 0 0 0
-	// 0 0 0 2 2 0 0 0	  0 0 0 1 1 0 0 0   0 0 0 1 1 0 0 0
-	// 0 0 0 0 0 0 0 0	  0 0 0 0 0 0 0 0   0 0 0 0 0 0 0 0
-	//
-	// The planes are stored as 8 bytes of LSB, followed by 8 bytes of MSB
-
-	// Loop through all 16x16 tiles
+	
 	for (uint16_t nTileY = 0; nTileY < 16; nTileY++)
 	{
 		for (uint16_t nTileX = 0; nTileX < 16; nTileX++)
@@ -142,37 +108,22 @@ olc::Sprite& olc2C02::GetPatternTable(uint8_t i, uint8_t palette)
 			// Now loop through 8 rows of 8 pixels
 			for (uint16_t row = 0; row < 8; row++)
 			{
-				// For each row, we need to read both bit planes of the character
-				// in order to extract the least significant and most significant 
-				// bits of the 2 bit pixel value. in the CHR ROM, each character
-				// is stored as 64 bits of lsb, followed by 64 bits of msb. This
-				// conveniently means that two corresponding rows are always 8
-				// bytes apart in memory.
+
 				uint8_t tile_lsb = ppuRead(i * 0x1000 + nOffset + row + 0x0000);
 				uint8_t tile_msb = ppuRead(i * 0x1000 + nOffset + row + 0x0008);
 
 
-				// Now we have a single row of the two bit planes for the character
-				// we need to iterate through the 8-bit words, combining them to give
-				// us the final pixel index
 				for (uint16_t col = 0; col < 8; col++)
 				{
-					// We can get the index value by simply adding the bits together
-					// but we're only interested in the lsb of the row words because...
+
 					uint8_t pixel = (tile_msb & 0x01) << 1 | (tile_lsb & 0x01);
 
-					// ...we will shift the row words 1 bit right for each column of
-					// the character.
+
 					tile_lsb >>= 1; tile_msb >>= 1;
 
-					// Now we know the location and NES pixel value for a specific location
-					// in the pattern table, we can translate that to a screen colour, and an
-					// (x,y) location in the sprite
 					sprPatternTable[i]->SetPixel
 					(
-						nTileX * 8 + (7 - col), // Because we are using the lsb of the row word first
-						// we are effectively reading the row from right
-						// to left, so we need to draw the row "backwards"
+						nTileX * 8 + (7 - col), 
 						nTileY * 8 + row,
 						GetColourFromPaletteRam(palette, pixel)
 					);
@@ -188,21 +139,15 @@ olc::Sprite& olc2C02::GetPatternTable(uint8_t i, uint8_t palette)
 
 olc::Pixel& olc2C02::GetColourFromPaletteRam(uint8_t palette, uint8_t pixel)
 {
-	// This is a convenience function that takes a specified palette and pixel
-	// index and returns the appropriate screen colour.
-	// "0x3F00"       - Offset into PPU addressable range where palettes are stored
-	// "palette << 2" - Each palette is 4 bytes in size
-	// "pixel"        - Each pixel index is either 0, 1, 2 or 3
-	// "& 0x3F"       - Stops us reading beyond the bounds of the palScreen array
+
 	return palScreen[ppuRead(0x3F00 + (palette << 2) + pixel) & 0x3F];
 
-	// Note: We dont access tblPalette directly here, instead we know that ppuRead()
-	// will map the address onto the seperate small RAM attached to the PPU bus.
+
 }
 
 olc::Sprite& olc2C02::GetNameTable(uint8_t i)
 {
-	// As of now unused, but a placeholder for nametable visualisation in teh future
+
 	return *sprNameTable[i];
 }
 
@@ -213,10 +158,7 @@ uint8_t olc2C02::cpuRead(uint16_t addr, bool rdonly)
 
 	if (rdonly)
 	{
-		// Reading from PPU registers can affect their contents
-		// so this read only option is used for examining the
-		// state of the PPU without changing its state. This is
-		// really only used in debug mode.
+
 		switch (addr)
 		{
 		case 0x0000: // Control
@@ -242,10 +184,7 @@ uint8_t olc2C02::cpuRead(uint16_t addr, bool rdonly)
 	}
 	else
 	{
-		// These are the live PPU registers that repsond
-		// to being read from in various ways. Note that not
-		// all the registers are capable of being read from
-		// so they just return 0x00
+
 		switch (addr)
 		{
 			// Control - Not readable
@@ -256,13 +195,7 @@ uint8_t olc2C02::cpuRead(uint16_t addr, bool rdonly)
 
 			// Status
 		case 0x0002:
-			// Reading from the status register has the effect of resetting
-			// different parts of the circuit. Only the top three bits
-			// contain status information, however it is possible that
-			// some "noise" gets picked up on the bottom 5 bits which 
-			// represent the last PPU bus transaction. Some games "may"
-			// use this noise as valid data (even though they probably
-			// shouldn't)
+
 			data = (status.reg & 0xE0) | (ppu_data_buffer & 0x1F);
 
 			// Clear the vertical blanking flag
@@ -297,11 +230,7 @@ uint8_t olc2C02::cpuRead(uint16_t addr, bool rdonly)
 			// However, if the address was in the palette range, the
 			// data is not delayed, so it returns immediately
 			if (vram_addr.reg >= 0x3F00) data = ppu_data_buffer;
-			// All reads from PPU data automatically increment the nametable
-			// address depending upon the mode set in the control register.
-			// If set to vertical mode, the increment is 32, so it skips
-			// one whole nametable row; in horizontal mode it just increments
-			// by 1, moving to the next column
+
 			vram_addr.reg += (control.increment_mode ? 32 : 1);
 			break;
 		}
@@ -371,11 +300,7 @@ void olc2C02::cpuWrite(uint16_t addr, uint8_t data)
 		break;
 	case 0x0007: // PPU Data
 		ppuWrite(vram_addr.reg, data);
-		// All writes from PPU data automatically increment the nametable
-		// address depending upon the mode set in the control register.
-		// If set to vertical mode, the increment is 32, so it skips
-		// one whole nametable row; in horizontal mode it just increments
-		// by 1, moving to the next column
+
 		vram_addr.reg += (control.increment_mode ? 32 : 1);
 		break;
 	}
@@ -520,29 +445,15 @@ void olc2C02::reset()
 
 void olc2C02::clock()
 {
-	// As we progress through scanlines and cycles, the PPU is effectively
-	// a state machine going through the motions of fetching background 
-	// information and sprite information, compositing them into a pixel
-	// to be output.
 
-	// The lambda functions (functions inside functions) contain the various
-	// actions to be performed depending upon the output of the state machine
-	// for a given scanline/cycle combination
-
-	// ==============================================================================
-	// Increment the background tile "pointer" one tile/column horizontally
 	auto IncrementScrollX = [&]()
 		{
-			// Note: pixel perfect scrolling horizontally is handled by the 
-			// data shifters. Here we are operating in the spatial domain of 
-			// tiles, 8x8 pixel blocks.
+			
 
 			// Ony if rendering is enabled
 			if (mask.render_background || mask.render_sprites)
 			{
-				// A single name table is 32x30 tiles. As we increment horizontally
-				// we may cross into a neighbouring nametable, or wrap around to
-				// a neighbouring nametable
+
 				if (vram_addr.coarse_x == 31)
 				{
 					// Leaving nametable so wrap address round
@@ -562,20 +473,7 @@ void olc2C02::clock()
 	// Increment the background tile "pointer" one scanline vertically
 	auto IncrementScrollY = [&]()
 		{
-			// Incrementing vertically is more complicated. The visible nametable
-			// is 32x30 tiles, but in memory there is enough room for 32x32 tiles.
-			// The bottom two rows of tiles are in fact not tiles at all, they
-			// contain the "attribute" information for the entire table. This is
-			// information that describes which palettes are used for different 
-			// regions of the nametable.
-
-			// In addition, the NES doesnt scroll vertically in chunks of 8 pixels
-			// i.e. the height of a tile, it can perform fine scrolling by using
-			// the fine_y component of the register. This means an increment in Y
-			// first adjusts the fine offset, but may need to adjust the whole
-			// row offset, since fine_y is a value 0 to 7, and a row is 8 pixels high
-
-			// Ony if rendering is enabled
+			
 			if (mask.render_background || mask.render_sprites)
 			{
 				// If possible, just increment the fine y offset
@@ -585,14 +483,7 @@ void olc2C02::clock()
 				}
 				else
 				{
-					// If we have gone beyond the height of a row, we need to
-					// increment the row, potentially wrapping into neighbouring
-					// vertical nametables. Dont forget however, the bottom two rows
-					// do not contain tile information. The coarse y offset is used
-					// to identify which row of the nametable we want, and the fine
-					// y offset is the specific "scanline"
-
-					// Reset fine y offset
+					
 					vram_addr.fine_y = 0;
 
 					// Check if we need to swap vertical nametable targets
@@ -633,10 +524,7 @@ void olc2C02::clock()
 			}
 		};
 
-	// ==============================================================================
-	// Transfer the temporarily stored vertical nametable access information
-	// into the "pointer". Note that fine y scrolling is part of the "pointer"
-	// addressing mechanism
+
 	auto TransferAddressY = [&]()
 		{
 			// Ony if rendering is enabled
@@ -649,36 +537,20 @@ void olc2C02::clock()
 		};
 
 
-	// ==============================================================================
-	// Prime the "in-effect" background tile shifters ready for outputting next
-	// 8 pixels in scanline.
+
 	auto LoadBackgroundShifters = [&]()
 		{
-			// Each PPU update we calculate one pixel. These shifters shift 1 bit along
-			// feeding the pixel compositor with the binary information it needs. Its
-			// 16 bits wide, because the top 8 bits are the current 8 pixels being drawn
-			// and the bottom 8 bits are the next 8 pixels to be drawn. Naturally this means
-			// the required bit is always the MSB of the shifter. However, "fine x" scrolling
-			// plays a part in this too, whcih is seen later, so in fact we can choose
-			// any one of the top 8 bits.
+			
 			bg_shifter_pattern_lo = (bg_shifter_pattern_lo & 0xFF00) | bg_next_tile_lsb;
 			bg_shifter_pattern_hi = (bg_shifter_pattern_hi & 0xFF00) | bg_next_tile_msb;
 
-			// Attribute bits do not change per pixel, rather they change every 8 pixels
-			// but are synchronised with the pattern shifters for convenience, so here
-			// we take the bottom 2 bits of the attribute word which represent which 
-			// palette is being used for the current 8 pixels and the next 8 pixels, and 
-			// "inflate" them to 8 bit words.
+			
 			bg_shifter_attrib_lo = (bg_shifter_attrib_lo & 0xFF00) | ((bg_next_tile_attrib & 0b01) ? 0xFF : 0x00);
 			bg_shifter_attrib_hi = (bg_shifter_attrib_hi & 0xFF00) | ((bg_next_tile_attrib & 0b10) ? 0xFF : 0x00);
 		};
 
 
-	// ==============================================================================
-	// Every cycle the shifters storing pattern and attribute information shift
-	// their contents by 1 bit. This is because every cycle, the output progresses
-	// by 1 pixel. This means relatively, the state of the shifter is in sync
-	// with the pixels being drawn for that 8 pixel section of the scanline.
+
 	auto UpdateShifters = [&]()
 		{
 			if (mask.render_background)
@@ -711,11 +583,10 @@ void olc2C02::clock()
 
 
 
-	// All but 1 of the secanlines is visible to the user. The pre-render scanline
-	// at -1, is used to configure the "shifters" for the first visible scanline, 0.
+
 	if (scanline >= -1 && scanline < 240)
 	{
-		// Background Rendering ======================================================
+
 
 		if (scanline == 0 && cycle == 0 && odd_frame && (mask.render_background || mask.render_sprites))
 		{
@@ -748,14 +619,7 @@ void olc2C02::clock()
 			UpdateShifters();
 
 
-			// In these cycles we are collecting and working with visible data
-			// The "shifters" have been preloaded by the end of the previous
-			// scanline with the data for the start of this scanline. Once we
-			// leave the visible region, we go dormant until the shifters are
-			// preloaded for the next scanline.
 
-			// Fortunately, for background rendering, we go through a fairly
-			// repeatable sequence of events, every 2 clock cycles.
 			switch ((cycle - 1) % 8)
 			{
 			case 0:
@@ -767,96 +631,15 @@ void olc2C02::clock()
 				// "| 0x2000"                 : Offset into nametable space on PPU address bus
 				bg_next_tile_id = ppuRead(0x2000 | (vram_addr.reg & 0x0FFF));
 
-				// Explanation:
-				// The bottom 12 bits of the loopy register provide an index into
-				// the 4 nametables, regardless of nametable mirroring configuration.
-				// nametable_y(1) nametable_x(1) coarse_y(5) coarse_x(5)
-				//
-				// Consider a single nametable is a 32x32 array, and we have four of them
-				//   0                1
-				// 0 +----------------+----------------+
-				//   |                |                |
-				//   |                |                |
-				//   |    (32x32)     |    (32x32)     |
-				//   |                |                |
-				//   |                |                |
-				// 1 +----------------+----------------+
-				//   |                |                |
-				//   |                |                |
-				//   |    (32x32)     |    (32x32)     |
-				//   |                |                |
-				//   |                |                |
-				//   +----------------+----------------+
-				//
-				// This means there are 4096 potential locations in this array, which 
-				// just so happens to be 2^12!
 				break;
 			case 2:
-				// Fetch the next background tile attribute. OK, so this one is a bit
-				// more involved :P
-
-				// Recall that each nametable has two rows of cells that are not tile 
-				// information, instead they represent the attribute information that
-				// indicates which palettes are applied to which area on the screen.
-				// Importantly (and frustratingly) there is not a 1 to 1 correspondance
-				// between background tile and palette. Two rows of tile data holds
-				// 64 attributes. Therfore we can assume that the attributes affect
-				// 8x8 zones on the screen for that nametable. Given a working resolution
-				// of 256x240, we can further assume that each zone is 32x32 pixels
-				// in screen space, or 4x4 tiles. Four system palettes are allocated
-				// to background rendering, so a palette can be specified using just
-				// 2 bits. The attribute byte therefore can specify 4 distinct palettes.
-				// Therefore we can even further assume that a single palette is
-				// applied to a 2x2 tile combination of the 4x4 tile zone. The very fact
-				// that background tiles "share" a palette locally is the reason why
-				// in some games you see distortion in the colours at screen edges.
-
-				// As before when choosing the tile ID, we can use the bottom 12 bits of
-				// the loopy register, but we need to make the implementation "coarser"
-				// because instead of a specific tile, we want the attribute byte for a 
-				// group of 4x4 tiles, or in other words, we divide our 32x32 address
-				// by 4 to give us an equivalent 8x8 address, and we offset this address
-				// into the attribute section of the target nametable.
-
-				// Reconstruct the 12 bit loopy address into an offset into the
-				// attribute memory
-
-				// "(vram_addr.coarse_x >> 2)"        : integer divide coarse x by 4, 
-				//                                      from 5 bits to 3 bits
-				// "((vram_addr.coarse_y >> 2) << 3)" : integer divide coarse y by 4, 
-				//                                      from 5 bits to 3 bits,
-				//                                      shift to make room for coarse x
-
-				// Result so far: YX00 00yy yxxx
-
-				// All attribute memory begins at 0x03C0 within a nametable, so OR with
-				// result to select target nametable, and attribute byte offset. Finally
-				// OR with 0x2000 to offset into nametable address space on PPU bus.				
+								
 				bg_next_tile_attrib = ppuRead(0x23C0 | (vram_addr.nametable_y << 11)
 					| (vram_addr.nametable_x << 10)
 					| ((vram_addr.coarse_y >> 2) << 3)
 					| (vram_addr.coarse_x >> 2));
 
-				// Right we've read the correct attribute byte for a specified address,
-				// but the byte itself is broken down further into the 2x2 tile groups
-				// in the 4x4 attribute zone.
-
-				// The attribute byte is assembled thus: BR(76) BL(54) TR(32) TL(10)
-				//
-				// +----+----+			    +----+----+
-				// | TL | TR |			    | ID | ID |
-				// +----+----+ where TL =   +----+----+
-				// | BL | BR |			    | ID | ID |
-				// +----+----+			    +----+----+
-				//
-				// Since we know we can access a tile directly from the 12 bit address, we
-				// can analyse the bottom bits of the coarse coordinates to provide us with
-				// the correct offset into the 8-bit word, to yield the 2 bits we are
-				// actually interested in which specifies the palette for the 2x2 group of
-				// tiles. We know if "coarse y % 4" < 2 we are in the top half else bottom half.
-				// Likewise if "coarse x % 4" < 2 we are in the left half else right half.
-				// Ultimately we want the bottom two bits of our attribute word to be the
-				// palette selected. So shift as required...				
+							
 				if (vram_addr.coarse_y & 0x02) bg_next_tile_attrib >>= 4;
 				if (vram_addr.coarse_x & 0x02) bg_next_tile_attrib >>= 2;
 				bg_next_tile_attrib &= 0x03;
@@ -865,61 +648,39 @@ void olc2C02::clock()
 				// Compared to the last two, the next two are the easy ones... :P
 
 			case 4:
-				// Fetch the next background tile LSB bit plane from the pattern memory
-				// The Tile ID has been read from the nametable. We will use this id to 
-				// index into the pattern memory to find the correct sprite (assuming
-				// the sprites lie on 8x8 pixel boundaries in that memory, which they do
-				// even though 8x16 sprites exist, as background tiles are always 8x8).
-				//
-				// Since the sprites are effectively 1 bit deep, but 8 pixels wide, we 
-				// can represent a whole sprite row as a single byte, so offsetting
-				// into the pattern memory is easy. In total there is 8KB so we need a 
-				// 13 bit address.
-
-				// "(control.pattern_background << 12)"  : the pattern memory selector 
-				//                                         from control register, either 0K
-				//                                         or 4K offset
-				// "((uint16_t)bg_next_tile_id << 4)"    : the tile id multiplied by 16, as
-				//                                         2 lots of 8 rows of 8 bit pixels
-				// "(vram_addr.fine_y)"                  : Offset into which row based on
-				//                                         vertical scroll offset
-				// "+ 0"                                 : Mental clarity for plane offset
-				// Note: No PPU address bus offset required as it starts at 0x0000
+				
 				bg_next_tile_lsb = ppuRead((control.pattern_background << 12)
 					+ ((uint16_t)bg_next_tile_id << 4)
 					+ (vram_addr.fine_y) + 0);
 
 				break;
 			case 6:
-				// Fetch the next background tile MSB bit plane from the pattern memory
-				// This is the same as above, but has a +8 offset to select the next bit plane
+				
 				bg_next_tile_msb = ppuRead((control.pattern_background << 12)
 					+ ((uint16_t)bg_next_tile_id << 4)
 					+ (vram_addr.fine_y) + 8);
 				break;
 			case 7:
-				// Increment the background tile "pointer" to the next tile horizontally
-				// in the nametable memory. Note this may cross nametable boundaries which
-				// is a little complex, but essential to implement scrolling
+				
 				IncrementScrollX();
 				break;
 			}
 		}
 
-		// End of a visible scanline, so increment downwards...
+		
 		if (cycle == 256)
 		{
 			IncrementScrollY();
 		}
 
-		//...and reset the x position
+		
 		if (cycle == 257)
 		{
 			LoadBackgroundShifters();
 			TransferAddressX();
 		}
 
-		// Superfluous reads of tile id at end of scanline
+		
 		if (cycle == 338 || cycle == 340)
 		{
 			bg_next_tile_id = ppuRead(0x2000 | (vram_addr.reg & 0x0FFF));
@@ -932,44 +693,26 @@ void olc2C02::clock()
 		}
 
 
-		// Foreground Rendering ========================================================
-		// I'm gonna cheat a bit here, which may reduce compatibility, but greatly
-		// simplifies delivering an intuitive understanding of what exactly is going
-		// on. The PPU loads sprite information successively during the region that
-		// background tiles are not being drawn. Instead, I'm going to perform
-		// all sprite evaluation in one hit. THE NES DOES NOT DO IT LIKE THIS! This makes
-		// it easier to see the process of sprite evaluation.
+		
 		if (cycle == 257 && scanline >= 0)
 		{
-			// We've reached the end of a visible scanline. It is now time to determine
-			// which sprites are visible on the next scanline, and preload this info
-			// into buffers that we can work with while the scanline scans the row.
-
-			// Firstly, clear out the sprite memory. This memory is used to store the
-			// sprites to be rendered. It is not the OAM.
+			
 			std::memset(spriteScanline, 0xFF, 8 * sizeof(sObjectAttributeEntry));
 
-			// The NES supports a maximum number of sprites per scanline. Nominally
-			// this is 8 or fewer sprites. This is why in some games you see sprites
-			// flicker or disappear when the scene gets busy.
+			
 			sprite_count = 0;
 
-			// Secondly, clear out any residual information in sprite pattern shifters
+			
 			for (uint8_t i = 0; i < 8; i++)
 			{
 				sprite_shifter_pattern_lo[i] = 0;
 				sprite_shifter_pattern_hi[i] = 0;
 			}
 
-			// Thirdly, Evaluate which sprites are visible in the next scanline. We need
-			// to iterate through the OAM until we have found 8 sprites that have Y-positions
-			// and heights that are within vertical range of the next scanline. Once we have
-			// found 8 or exhausted the OAM we stop. Now, notice I count to 9 sprites. This
-			// is so I can set the sprite overflow flag in the event of there being > 8 sprites.
+			
 			uint8_t nOAMEntry = 0;
 
-			// New set of sprites. Sprite zero may not exist in the new set, so clear this
-			// flag.
+			
 			bSpriteZeroHitPossible = false;
 
 			while (nOAMEntry < 64 && sprite_count < 9)
@@ -977,16 +720,11 @@ void olc2C02::clock()
 				// Note the conversion to signed numbers here
 				int16_t diff = ((int16_t)scanline - (int16_t)OAM[nOAMEntry].y);
 
-				// If the difference is positive then the scanline is at least at the
-				// same height as the sprite, so check if it resides in the sprite vertically
-				// depending on the current "sprite height mode"
-				// FLAGGED
+				
 
 				if (diff >= 0 && diff < (control.sprite_size ? 16 : 8) && sprite_count < 8)
 				{
-					// Sprite is visible, so copy the attribute entry over to our
-					// scanline sprite cache. Ive added < 8 here to guard the array
-					// being written to.
+					
 					if (sprite_count < 8)
 					{
 						// Is this sprite sprite zero?
@@ -1007,43 +745,31 @@ void olc2C02::clock()
 			// Set sprite overflow flag
 			status.sprite_overflow = (sprite_count >= 8);
 
-			// Now we have an array of the 8 visible sprites for the next scanline. By 
-			// the nature of this search, they are also ranked in priority, because
-			// those lower down in the OAM have the higher priority.
-
-			// We also guarantee that "Sprite Zero" will exist in spriteScanline[0] if
-			// it is evaluated to be visible. 
+			
 		}
 
 		if (cycle == 340)
 		{
-			// Now we're at the very end of the scanline, I'm going to prepare the 
-			// sprite shifters with the 8 or less selected sprites.
+			
 
 			for (uint8_t i = 0; i < sprite_count; i++)
 			{
-				// We need to extract the 8-bit row patterns of the sprite with the
-				// correct vertical offset. The "Sprite Mode" also affects this as
-				// the sprites may be 8 or 16 rows high. Additionally, the sprite
-				// can be flipped both vertically and horizontally. So there's a lot
-				// going on here :P
+				
 
 				uint8_t sprite_pattern_bits_lo, sprite_pattern_bits_hi;
 				uint16_t sprite_pattern_addr_lo, sprite_pattern_addr_hi;
 
-				// Determine the memory addresses that contain the byte of pattern data. We
-				// only need the lo pattern address, because the hi pattern address is always
-				// offset by 8 from the lo address.
+				
 				if (!control.sprite_size)
 				{
-					// 8x8 Sprite Mode - The control register determines the pattern table
+					
 					if (!(spriteScanline[i].attribute & 0x80))
 					{
-						// Sprite is NOT flipped vertically, i.e. normal    
+						
 						sprite_pattern_addr_lo =
-							(control.pattern_sprite << 12)  // Which Pattern Table? 0KB or 4KB offset
-							| (spriteScanline[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
-							| (scanline - spriteScanline[i].y); // Which Row in cell? (0->7)
+							(control.pattern_sprite << 12)  
+							| (spriteScanline[i].id << 4)  
+							| (scanline - spriteScanline[i].y);
 
 					}
 					else
@@ -1101,12 +827,7 @@ void olc2C02::clock()
 					}
 				}
 
-				// Phew... XD I'm absolutely certain you can use some fantastic bit 
-				// manipulation to reduce all of that to a few one liners, but in this
-				// form it's easy to see the processes required for the different
-				// sizes and vertical orientations
-
-				// Hi bit plane equivalent is always offset by 8 bytes from lo bit plane
+				
 				sprite_pattern_addr_hi = sprite_pattern_addr_lo + 8;
 
 				// Now we have the address of the sprite patterns, we can read them
@@ -1117,10 +838,7 @@ void olc2C02::clock()
 				// pattern bytes. 
 				if (spriteScanline[i].attribute & 0x40)
 				{
-					// This little lambda function "flips" a byte
-					// so 0b11100000 becomes 0b00000111. It's very
-					// clever, and stolen completely from here:
-					// https://stackoverflow.com/a/2602885
+					
 					auto flipbyte = [](uint8_t b)
 						{
 							b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -1134,8 +852,7 @@ void olc2C02::clock()
 					sprite_pattern_bits_hi = flipbyte(sprite_pattern_bits_hi);
 				}
 
-				// Finally! We can load the pattern into our sprite shift registers
-				// ready for rendering on the next scanline
+
 				sprite_shifter_pattern_lo[i] = sprite_pattern_bits_lo;
 				sprite_shifter_pattern_hi[i] = sprite_pattern_bits_hi;
 			}
@@ -1154,11 +871,7 @@ void olc2C02::clock()
 			// Effectively end of frame, so set vertical blank flag
 			status.vertical_blank = 1;
 
-			// If the control register tells us to emit a NMI when
-			// entering vertical blanking period, do it! The CPU
-			// will be informed that rendering is complete so it can
-			// perform operations with the PPU knowing it wont
-			// produce visible artefacts
+
 			if (control.enable_nmi)
 				nmi = true;
 		}
@@ -1172,22 +885,14 @@ void olc2C02::clock()
 	uint8_t bg_pixel = 0x00;   // The 2-bit pixel to be rendered
 	uint8_t bg_palette = 0x00; // The 3-bit index of the palette the pixel indexes
 
-	// We only render backgrounds if the PPU is enabled to do so. Note if 
-	// background rendering is disabled, the pixel and palette combine
-	// to form 0x00. This will fall through the colour tables to yield
-	// the current background colour in effect
+
 	if (mask.render_background)
 	{
 		if (mask.render_background_left || (cycle >= 9))
 		{
-			// Handle Pixel Selection by selecting the relevant bit
-			// depending upon fine x scolling. This has the effect of
-			// offsetting ALL background rendering by a set number
-			// of pixels, permitting smooth scrolling
+
 			uint16_t bit_mux = 0x8000 >> fine_x;
 
-			// Select Plane pixels by extracting from the shifter 
-			// at the required location. 
 			uint8_t p0_pixel = (bg_shifter_pattern_lo & bit_mux) > 0;
 			uint8_t p1_pixel = (bg_shifter_pattern_hi & bit_mux) > 0;
 
@@ -1209,8 +914,7 @@ void olc2C02::clock()
 	if (mask.render_sprites)
 	{
 		// Iterate through all sprites for this scanline. This is to maintain
-		// sprite priority. As soon as we find a non transparent pixel of
-		// a sprite we can abort
+		// sprite priority.
 		if (mask.render_sprites_left || (cycle >= 9))
 		{
 
@@ -1218,27 +922,19 @@ void olc2C02::clock()
 
 			for (uint8_t i = 0; i < sprite_count; i++)
 			{
-				// Scanline cycle has "collided" with sprite, shifters taking over
+
 				if (spriteScanline[i].x == 0)
 				{
-					// Note Fine X scrolling does not apply to sprites, the game
-					// should maintain their relationship with the background. So
-					// we'll just use the MSB of the shifter
-
-					// Determine the pixel value...
+				
 					uint8_t fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) > 0;
 					uint8_t fg_pixel_hi = (sprite_shifter_pattern_hi[i] & 0x80) > 0;
 					fg_pixel = (fg_pixel_hi << 1) | fg_pixel_lo;
 
-					// Extract the palette from the bottom two bits. Recall
-					// that foreground palettes are the latter 4 in the 
-					// palette memory.
+
 					fg_palette = (spriteScanline[i].attribute & 0x03) + 0x04;
 					fg_priority = (spriteScanline[i].attribute & 0x20) == 0;
 
-					// If pixel is not transparent, we render it, and dont
-					// bother checking the rest because the earlier sprites
-					// in the list are higher priority
+	
 					if (fg_pixel != 0)
 					{
 						if (i == 0) // Is this sprite zero?
@@ -1253,10 +949,7 @@ void olc2C02::clock()
 		}
 	}
 
-	// Now we have a background pixel and a foreground pixel. They need
-	// to be combined. It is possible for sprites to go behind background
-	// tiles that are not "transparent", yet another neat trick of the PPU
-	// that adds complexity for us poor emulator developers...
+
 
 	uint8_t pixel = 0x00;   // The FINAL Pixel...
 	uint8_t palette = 0x00; // The FINAL Palette...
@@ -1306,13 +999,10 @@ void olc2C02::clock()
 		// Sprite Zero Hit detection
 		if (bSpriteZeroHitPossible && bSpriteZeroBeingRendered)
 		{
-			// Sprite zero is a collision between foreground and background
-			// so they must both be enabled
+
 			if (mask.render_background & mask.render_sprites)
 			{
-				// The left edge of the screen has specific switches to control
-				// its appearance. This is used to smooth inconsistencies when
-				// scrolling (since sprites x coord must be >= 0)
+
 				if (!(mask.render_background_left | mask.render_sprites_left))
 				{
 					if (cycle >= 9 && cycle < 258)
@@ -1331,8 +1021,7 @@ void olc2C02::clock()
 		}
 	}
 
-	// Now we have a final pixel colour, and a palette for this cycle
-	// of the current scanline. Let's at long last, draw that ^&%*er :P
+
 	sprScreen->SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(palette, pixel));
 
 	// Advance renderer - it never stops, it's relentless

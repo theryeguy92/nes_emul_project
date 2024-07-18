@@ -4,17 +4,7 @@
 // Constructor
 olc6502::olc6502()
 {
-	// Assembles the translation table. It's big, it's ugly, but it yields a convenient way
-	// to emulate the 6502. I'm certain there are some "code-golf" strategies to reduce this
-	// but I've deliberately kept it verbose for study and alteration
-
-	// It is 16x16 entries. This gives 256 instructions. It is arranged to that the bottom
-	// 4 bits of the instruction choose the column, and the top 4 bits choose the row.
-
-	// For convenience to get function pointers to members of this class, I'm using this
-	// or else it will be much much larger :D
-
-	// The table is one big initialiser list of initialiser lists...
+	// Assembles the translation table to emulate the 6502... Thank god for github/youtube
 	using a = olc6502;
 	lookup =
 	{
@@ -46,17 +36,13 @@ olc6502::~olc6502()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
+
 // BUS CONNECTIVITY
 
 // Reads an 8-bit byte from the bus, located at the specified 16-bit address
 uint8_t olc6502::read(uint16_t a)
 {
-	// In normal operation "read only" is set to false. This may seem odd. Some
-	// devices on the bus may change state when they are read from, and this 
-	// is intentional under normal circumstances. However the disassembler will
-	// want to read the data at an address without changing the state of the
-	// devices on the bus
+
 	return bus->cpuRead(a, false);
 }
 
@@ -73,13 +59,7 @@ void olc6502::write(uint16_t a, uint8_t d)
 ///////////////////////////////////////////////////////////////////////////////
 // EXTERNAL INPUTS
 
-// Forces the 6502 into a known state. This is hard-wired inside the CPU. The
-// registers are set to 0x00, the status register is cleared except for unused
-// bit which remains at 1. An absolute address is read from location 0xFFFC
-// which contains a second address that the program counter is set to. This 
-// allows the programmer to jump to a known and programmable location in the
-// memory to start executing from. Typically the programmer would set the value
-// at location 0xFFFC at compile time.
+
 void olc6502::reset()
 {
 	// Get address to set program counter to
@@ -107,19 +87,7 @@ void olc6502::reset()
 }
 
 
-// Interrupt requests are a complex operation and only happen if the
-// "disable interrupt" flag is 0. IRQs can happen at any time, but
-// you dont want them to be destructive to the operation of the running 
-// program. Therefore the current instruction is allowed to finish
-// (which I facilitate by doing the whole thing when cycles == 0) and 
-// then the current program counter is stored on the stack. Then the
-// current status register is stored on the stack. When the routine
-// that services the interrupt has finished, the status register
-// and program counter can be restored to how they where before it 
-// occurred. This is impemented by the "RTI" instruction. Once the IRQ
-// has happened, in a similar way to a reset, a programmable address
-// is read form hard coded location 0xFFFE, which is subsequently
-// set to the program counter.
+
 void olc6502::irq()
 {
 	// If interrupts are allowed
@@ -151,9 +119,6 @@ void olc6502::irq()
 }
 
 
-// A Non-Maskable Interrupt cannot be ignored. It behaves in exactly the
-// same way as a regular IRQ, but reads the new program counter address
-// form location 0xFFFA.
 void olc6502::nmi()
 {
 	write(0x0100 + stkp, (pc >> 8) & 0x00FF);
@@ -178,21 +143,10 @@ void olc6502::nmi()
 // Perform one clock cycles worth of emulation
 void olc6502::clock()
 {
-	// Each instruction requires a variable number of clock cycles to execute.
-	// In my emulation, I only care about the final result and so I perform
-	// the entire computation in one hit. In hardware, each clock cycle would
-	// perform "microcode" style transformations of the CPUs state.
-	//
-	// To remain compliant with connected devices, it's important that the 
-	// emulation also takes "time" in order to execute instructions, so I
-	// implement that delay by simply counting down the cycles required by 
-	// the instruction. When it reaches 0, the instruction is complete, and
-	// the next one is ready to be executed.
+
 	if (cycles == 0)
 	{
-		// Read next instruction byte. This 8-bit value is used to index
-		// the translation table to get the relevant information about
-		// how to implement the instruction
+
 		opcode = read(pc);
 
 #ifdef LOGMODE
@@ -209,7 +163,7 @@ void olc6502::clock()
 		cycles = lookup[opcode].cycles;
 
 		// Perform fetch of intermmediate data using the
-		// required addressing mode
+
 		uint8_t additional_cycle1 = (this->*lookup[opcode].addrmode)();
 
 		// Perform operation
@@ -224,8 +178,7 @@ void olc6502::clock()
 
 #ifdef LOGMODE
 		// This logger dumps every cycle the entire processor state for analysis.
-		// This can be used for debugging the emulation, but has little utility
-		// during emulation. Its also very slow, so only use if you have to.
+		// As of now, I am using this for debugging.
 		if (logfile == nullptr)	logfile = fopen("olc6502.txt", "wt");
 		if (logfile != nullptr)
 		{
@@ -238,8 +191,7 @@ void olc6502::clock()
 #endif
 	}
 
-	// Increment global clock count - This is actually unused unless logging is enabled
-	// but I've kept it in because its a handy watch variable for debugging
+	// Clock count
 	clock_count++;
 
 	// Decrement the number of cycles remaining for this instruction
@@ -250,10 +202,10 @@ void olc6502::clock()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
+
 // FLAG FUNCTIONS
 
-// Returns the value of a specific bit of the status register
+
 uint8_t olc6502::GetFlag(FLAGS6502 f)
 {
 	return ((status & f) > 0) ? 1 : 0;
@@ -272,7 +224,7 @@ void olc6502::SetFlag(FLAGS6502 f, bool v)
 
 
 
-///////////////////////////////////////////////////////////////////////////////
+
 // ADDRESSING MODES
 
 // The 6502 can address between 0x0000 - 0xFFFF. The high byte is often referred
@@ -513,75 +465,6 @@ uint8_t olc6502::fetch()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// INSTRUCTION IMPLEMENTATIONS
-
-// Note: Ive started with the two most complicated instructions to emulate, which
-// ironically is addition and subtraction! Ive tried to include a detailed 
-// explanation as to why they are so complex, yet so fundamental. Im also NOT
-// going to do this through the explanation of 1 and 2's complement.
-
-// Instruction: Add with Carry In
-// Function:    A = A + M + C
-// Flags Out:   C, V, N, Z
-//
-// Explanation:
-// The purpose of this function is to add a value to the accumulator and a carry bit. If
-// the result is > 255 there is an overflow setting the carry bit. Ths allows you to
-// chain together ADC instructions to add numbers larger than 8-bits. This in itself is
-// simple, however the 6502 supports the concepts of Negativity/Positivity and Signed Overflow.
-//
-// 10000100 = 128 + 4 = 132 in normal circumstances, we know this as unsigned and it allows
-// us to represent numbers between 0 and 255 (given 8 bits). The 6502 can also interpret 
-// this word as something else if we assume those 8 bits represent the range -128 to +127,
-// i.e. it has become signed.
-//
-// Since 132 > 127, it effectively wraps around, through -128, to -124. This wraparound is
-// called overflow, and this is a useful to know as it indicates that the calculation has
-// gone outside the permissable range, and therefore no longer makes numeric sense.
-//
-// Note the implementation of ADD is the same in binary, this is just about how the numbers
-// are represented, so the word 10000100 can be both -124 and 132 depending upon the 
-// context the programming is using it in. We can prove this!
-//
-//  10000100 =  132  or  -124
-// +00010001 = + 17      + 17
-//  ========    ===       ===     See, both are valid additions, but our interpretation of
-//  10010101 =  149  or  -107     the context changes the value, not the hardware!
-//
-// In principle under the -128 to 127 range:
-// 10000000 = -128, 11111111 = -1, 00000000 = 0, 00000000 = +1, 01111111 = +127
-// therefore negative numbers have the most significant set, positive numbers do not
-//
-// To assist us, the 6502 can set the overflow flag, if the result of the addition has
-// wrapped around. V <- ~(A^M) & A^(A+M+C) :D lol, let's work out why!
-//
-// Let's suppose we have A = 30, M = 10 and C = 0
-//          A = 30 = 00011110
-//          M = 10 = 00001010+
-//     RESULT = 40 = 00101000
-//
-// Here we have not gone out of range. The resulting significant bit has not changed.
-// So let's make a truth table to understand when overflow has occurred. Here I take
-// the MSB of each component, where R is RESULT.
-//
-// A  M  R | V | A^R | A^M |~(A^M) | 
-// 0  0  0 | 0 |  0  |  0  |   1   |
-// 0  0  1 | 1 |  1  |  0  |   1   |
-// 0  1  0 | 0 |  0  |  1  |   0   |
-// 0  1  1 | 0 |  1  |  1  |   0   |  so V = ~(A^M) & (A^R)
-// 1  0  0 | 0 |  1  |  1  |   0   |
-// 1  0  1 | 0 |  0  |  1  |   0   |
-// 1  1  0 | 1 |  1  |  0  |   1   |
-// 1  1  1 | 0 |  0  |  0  |   1   |
-//
-// We can see how the above equation calculates V, based on A, M and R. V was chosen
-// based on the following hypothesis:
-//       Positive Number + Positive Number = Negative Result -> Overflow
-//       Negative Number + Negative Number = Positive Result -> Overflow
-//       Positive Number + Negative Number = Either Result -> Cannot Overflow
-//       Positive Number + Positive Number = Positive Result -> OK! No Overflow
-//       Negative Number + Negative Number = Negative Result -> OK! NO Overflow
 
 uint8_t olc6502::ADC()
 {
@@ -612,31 +495,7 @@ uint8_t olc6502::ADC()
 }
 
 
-// Instruction: Subtraction with Borrow In
-// Function:    A = A - M - (1 - C)
-// Flags Out:   C, V, N, Z
-//
-// Explanation:
-// Given the explanation for ADC above, we can reorganise our data
-// to use the same computation for addition, for subtraction by multiplying
-// the data by -1, i.e. make it negative
-//
-// A = A - M - (1 - C)  ->  A = A + -1 * (M - (1 - C))  ->  A = A + (-M + 1 + C)
-//
-// To make a signed positive number negative, we can invert the bits and add 1
-// (OK, I lied, a little bit of 1 and 2s complement :P)
-//
-//  5 = 00000101
-// -5 = 11111010 + 00000001 = 11111011 (or 251 in our 0 to 255 range)
-//
-// The range is actually unimportant, because if I take the value 15, and add 251
-// to it, given we wrap around at 256, the result is 10, so it has effectively 
-// subtracted 5, which was the original intention. (15 + 251) % 256 = 10
-//
-// Note that the equation above used (1-C), but this got converted to + 1 + C.
-// This means we already have the +1, so all we need to do is invert the bits
-// of M, the data(!) therfore we can simply add, exactly the same way we did 
-// before.
+
 
 uint8_t olc6502::SBC()
 {
@@ -657,19 +516,6 @@ uint8_t olc6502::SBC()
 	return 1;
 }
 
-// OK! Complicated operations are done! the following are much simpler
-// and conventional. The typical order of events is:
-// 1) Fetch the data you are working with
-// 2) Perform calculation
-// 3) Store the result in desired place
-// 4) Set Flags of the status register
-// 5) Return if instruction has potential to require additional 
-//    clock cycle
-
-
-// Instruction: Bitwise Logic AND
-// Function:    A = A & M
-// Flags Out:   N, Z
 uint8_t olc6502::AND()
 {
 	fetch();
@@ -680,9 +526,6 @@ uint8_t olc6502::AND()
 }
 
 
-// Instruction: Arithmetic Shift Left
-// Function:    A = C <- (A << 1) <- 0
-// Flags Out:   N, Z, C
 uint8_t olc6502::ASL()
 {
 	fetch();
@@ -698,8 +541,6 @@ uint8_t olc6502::ASL()
 }
 
 
-// Instruction: Branch if Carry Clear
-// Function:    if(C == 0) pc = address 
 uint8_t olc6502::BCC()
 {
 	if (GetFlag(C) == 0)
@@ -715,9 +556,6 @@ uint8_t olc6502::BCC()
 	return 0;
 }
 
-
-// Instruction: Branch if Carry Set
-// Function:    if(C == 1) pc = address
 uint8_t olc6502::BCS()
 {
 	if (GetFlag(C) == 1)
@@ -734,8 +572,7 @@ uint8_t olc6502::BCS()
 }
 
 
-// Instruction: Branch if Equal
-// Function:    if(Z == 1) pc = address
+
 uint8_t olc6502::BEQ()
 {
 	if (GetFlag(Z) == 1)
@@ -762,8 +599,7 @@ uint8_t olc6502::BIT()
 }
 
 
-// Instruction: Branch if Negative
-// Function:    if(N == 1) pc = address
+
 uint8_t olc6502::BMI()
 {
 	if (GetFlag(N) == 1)
@@ -780,8 +616,7 @@ uint8_t olc6502::BMI()
 }
 
 
-// Instruction: Branch if Not Equal
-// Function:    if(Z == 0) pc = address
+
 uint8_t olc6502::BNE()
 {
 	if (GetFlag(Z) == 0)
@@ -798,8 +633,7 @@ uint8_t olc6502::BNE()
 }
 
 
-// Instruction: Branch if Positive
-// Function:    if(N == 0) pc = address
+
 uint8_t olc6502::BPL()
 {
 	if (GetFlag(N) == 0)
@@ -1380,7 +1214,7 @@ uint8_t olc6502::XXX()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
+
 // HELPER FUNCTIONS
 
 bool olc6502::complete()
@@ -1388,10 +1222,7 @@ bool olc6502::complete()
 	return cycles == 0;
 }
 
-// This is the disassembly function. Its workings are not required for emulation.
-// It is merely a convenience function to turn the binary instruction code into
-// human readable form. Its included as part of the emulator because it can take
-// advantage of many of the CPUs internal operations to do this.
+
 std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t nStop)
 {
 	uint32_t addr = nStart;
@@ -1399,9 +1230,7 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 	std::map<uint16_t, std::string> mapLines;
 	uint16_t line_addr = 0;
 
-	// A convenient utility to convert variables into
-	// hex strings because "modern C++"'s method with 
-	// streams is atrocious
+
 	auto hex = [](uint32_t n, uint8_t d)
 		{
 			std::string s(d, '0');
@@ -1410,14 +1239,8 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 			return s;
 		};
 
-	// Starting at the specified address we read an instruction
-	// byte, which in turn yields information from the lookup table
-	// as to how many additional bytes we need to read and what the
-	// addressing mode is. I need this info to assemble human readable
-	// syntax, which is different depending upon the addressing mode
 
-	// As the instruction is decoded, a std::string is assembled
-	// with the readable output
+
 	while (addr <= (uint32_t)nStop)
 	{
 		line_addr = addr;
@@ -1429,11 +1252,7 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 		uint8_t opcode = bus->cpuRead(addr, true); addr++;
 		sInst += lookup[opcode].name + " ";
 
-		// Get oprands from desired locations, and form the
-		// instruction based upon its addressing mode. These
-		// routines mimmick the actual fetch routine of the
-		// 6502 in order to get accurate data as part of the
-		// instruction
+
 		if (lookup[opcode].addrmode == &olc6502::IMP)
 		{
 			sInst += " {IMP}";
@@ -1503,14 +1322,10 @@ std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t n
 			sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}";
 		}
 
-		// Add the formed string to a std::map, using the instruction's
-		// address as the key. This makes it convenient to look for later
-		// as the instructions are variable in length, so a straight up
-		// incremental index is not sufficient.
+	
 		mapLines[line_addr] = sInst;
 	}
 
 	return mapLines;
 }
 
-// E

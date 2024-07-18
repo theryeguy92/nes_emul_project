@@ -118,14 +118,7 @@ private:
 		}
 	}
 
-	// This function is called by the underlying sound hardware
-	// which runs in a different thread. It is automatically
-	// synchronised with the sample rate of the sound card, and
-	// expects a single "sample" to be returned, whcih ultimately
-	// makes its way to your speakers, and then your ears, for that
-	// lovely 8-bit bliss... but, that means we've some thread
-	// handling to deal with, since we want both the PGE thread
-	// and the sound system thread to interact with the emulator.
+	// Below the function is called by the underlying sound hardware
 
 	static Demo_olcNES* pInstance; // Static variable that will hold a pointer to "this"
 
@@ -144,7 +137,7 @@ private:
 	bool OnUserCreate() override
 	{
 		// Load the cartridge
-		cart = std::make_shared<Cartridge>("../nestest.nes");
+		cart = std::make_shared<Cartridge>("../ducktails.nes");
 
 		if (!cart->ImageValid())
 			return false;
@@ -187,10 +180,7 @@ private:
 		return true;
 	}
 
-	// This performs an emulation update but synced to audio, so it cant
-	// perform stepping through code or frames. Essentially, it runs
-	// the emulation in real time now, so only accepts "controller" input
-	// and updates the display
+	//Audio Logic
 	bool EmulatorUpdateWithAudio(float fElapsedTime)
 	{
 		// Sample audio channel output roughly once per frame
@@ -223,17 +213,8 @@ private:
 		if (GetKey(olc::Key::P).bPressed) (++nSelectedPalette) &= 0x07;
 
 		DrawCpu(516, 2);
-		//DrawCode(516, 72, 26);
+		
 
-		// Draw OAM Contents (first 26 out of 64) ======================================
-		/*for (int i = 0; i < 26; i++)
-		{
-			std::string s = hex(i, 2) + ": (" + std::to_string(nes.ppu.pOAM[i * 4 + 3])
-				+ ", " + std::to_string(nes.ppu.pOAM[i * 4 + 0]) + ") "
-				+ "ID: " + hex(nes.ppu.pOAM[i * 4 + 1], 2) +
-				+" AT: " + hex(nes.ppu.pOAM[i * 4 + 2], 2);
-			DrawString(516, 72 + i * 10, s);
-		}*/
 
 		// Draw AUDIO Channels
 		DrawAudio(0, 520, 72);
@@ -241,7 +222,7 @@ private:
 		DrawAudio(2, 520, 196);
 		DrawAudio(3, 644, 196);
 
-		// Draw Palettes & Pattern Tables ==============================================
+		// Draw Palettes & Pattern Tables
 		const int nSwatchSize = 6;
 		for (int p = 0; p < 8; p++) // For each palette
 			for (int s = 0; s < 4; s++) // For each index
@@ -255,13 +236,12 @@ private:
 		DrawSprite(516, 348, &nes.ppu.GetPatternTable(0, nSelectedPalette));
 		DrawSprite(648, 348, &nes.ppu.GetPatternTable(1, nSelectedPalette));
 
-		// Draw rendered output ========================================================
+		// Draw rendered output 
 		DrawSprite(0, 0, &nes.ppu.GetScreen(), 2);
 		return true;
 	}
 
-	// This performs emulation with no audio synchronisation, so it is just
-	// as before, in all the previous videos
+
 	bool EmulatorUpdateWithoutAudio(float fElapsedTime)
 	{
 		Clear(olc::DARK_BLUE);
@@ -320,17 +300,8 @@ private:
 		DrawCpu(516, 2);
 		//DrawCode(516, 72, 26);
 
-		// Draw OAM Contents (first 26 out of 64) ======================================
-		/*for (int i = 0; i < 26; i++)
-		{
-			std::string s = hex(i, 2) + ": (" + std::to_string(nes.ppu.pOAM[i * 4 + 3])
-				+ ", " + std::to_string(nes.ppu.pOAM[i * 4 + 0]) + ") "
-				+ "ID: " + hex(nes.ppu.pOAM[i * 4 + 1], 2) +
-				+" AT: " + hex(nes.ppu.pOAM[i * 4 + 2], 2);
-			DrawString(516, 72 + i * 10, s);
-		}*/
 
-		// Draw Palettes & Pattern Tables ==============================================
+		// Draw Palettes & Pattern Tables 
 		const int nSwatchSize = 6;
 		for (int p = 0; p < 8; p++) // For each palette
 			for (int s = 0; s < 4; s++) // For each index
@@ -344,7 +315,7 @@ private:
 		DrawSprite(516, 348, &nes.ppu.GetPatternTable(0, nSelectedPalette));
 		DrawSprite(648, 348, &nes.ppu.GetPatternTable(1, nSelectedPalette));
 
-		// Draw rendered output ========================================================
+		// Draw rendered output 
 		DrawSprite(0, 0, &nes.ppu.GetScreen(), 2);
 		return true;
 	}
