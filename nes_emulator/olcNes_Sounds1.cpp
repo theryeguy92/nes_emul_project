@@ -14,7 +14,7 @@
 class Demo_olcNES : public olc::PixelGameEngine
 {
 public:
-	Demo_olcNES() { sAppName = "olcNES Sound Demonstration"; }
+	Demo_olcNES() { sAppName = "Ryan_Levey_NES_Emulation_Project"; }
 
 private:
 	// The NES
@@ -137,7 +137,7 @@ private:
 	bool OnUserCreate() override
 	{
 		// Load the cartridge
-		cart = std::make_shared<Cartridge>("../ducktails.nes");
+		cart = std::make_shared<Cartridge>("../supermariobrothers.nes");
 
 		if (!cart->ImageValid())
 			return false;
