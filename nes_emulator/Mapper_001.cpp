@@ -48,7 +48,7 @@ bool Mapper_001::cpuMapRead(uint16_t addr, uint32_t& mapped_addr)
     return false;
 }
 
-bool Mapper_001::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr)
+bool Mapper_001::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data) // Added data parameter
 {
     if (addr >= 0x6000 && addr <= 0x7FFF)
     {
@@ -61,7 +61,6 @@ bool Mapper_001::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr)
 
     if (addr >= 0x8000)
     {
-        uint8_t data = 0; // Temporary variable for data
         if (data & 0x80)
         {
             // MSB is set, so reset serial loading

@@ -19,26 +19,25 @@ public:
 public:
     // Transform CPU bus address into PRG ROM offset
     virtual bool cpuMapRead(uint16_t addr, uint32_t& mapped_addr) = 0;
-    virtual bool cpuMapWrite(uint16_t addr, uint32_t& mapped_addr) = 0;
+    virtual bool cpuMapWrite(uint16_t addr, uint32_t& mapped_addr, uint8_t data) = 0; // Added data parameter
     // Transform PPU bus address into CHR ROM offset
     virtual bool ppuMapRead(uint16_t addr, uint32_t& mapped_addr) = 0;
     virtual bool ppuMapWrite(uint16_t addr, uint32_t& mapped_addr) = 0;
 
     // IRQ handling
-    virtual bool irqState();    // Added declaration
-    virtual void irqClear();    // Added declaration
+    virtual bool irqState();
+    virtual void irqClear();
 
     // Mirroring handling
-    virtual MIRROR mirror();    // Added declaration
+    virtual MIRROR mirror();
 
     // Reset
-    virtual void reset();       // Added declaration
+    virtual void reset();
 
     // Scanline
-    virtual void scanline();    // Added declaration
+    virtual void scanline();
 
 protected:
-    // These are stored locally as many of the mappers require this information
     uint8_t nPRGBanks = 0;
     uint8_t nCHRBanks = 0;
 };
