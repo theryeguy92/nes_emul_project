@@ -65,9 +65,6 @@
     <ClCompile Include="olc6502.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="olcNes_2C02.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="olc2C02.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
