@@ -55,15 +55,13 @@ bool Mapper_001::cpuMapWrite(uint16_t addr, uint32_t& mapped_addr)
         // Write is to static ram on cartridge
         mapped_addr = 0xFFFFFFFF;
 
-        // Write data to RAM
-        vRAMStatic[addr & 0x1FFF] = data;
-
         // Signal mapper has handled request
         return true;
     }
 
     if (addr >= 0x8000)
     {
+        uint8_t data = 0; // Temporary variable for data
         if (data & 0x80)
         {
             // MSB is set, so reset serial loading
