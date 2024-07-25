@@ -122,10 +122,7 @@ private:
 	// which runs in a different thread. It is automatically
 	// synchronised with the sample rate of the sound card, and
 	// expects a single "sample" to be returned, whcih ultimately
-	// makes its way to your speakers, and then your ears, for that
-	// lovely 8-bit bliss... but, that means we've some thread
-	// handling to deal with, since we want both the PGE thread
-	// and the sound system thread to interact with the emulator.
+	// makes its way to your speakers, and then your ears, for that.
 
 	static Demo_olcNES* pInstance; // Static variable that will hold a pointer to "this"
 
@@ -144,7 +141,7 @@ private:
 	bool OnUserCreate() override
 	{
 		// Load the cartridge
-		cart = std::make_shared<Cartridge>("../nestest.nes");
+		cart = std::make_shared<Cartridge>("../Super_Mario_Bros_World.nes");
 
 		if (!cart->ImageValid())
 			return false;
